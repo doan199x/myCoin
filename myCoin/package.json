@@ -1,8 +1,9 @@
 {
-  "name": "myCoin",
+  "name": "mycoin",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "proxy": "http://localhost:3001",
   "scripts": {
     "dev": "tsc -w",
     "start": "tsc && node ."
@@ -30,3 +31,4 @@
     "ts-mongoose": "^0.0.24"
   }
 }
+

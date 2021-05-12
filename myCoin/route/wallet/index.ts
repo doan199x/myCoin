@@ -1,10 +1,27 @@
+import { privateKey } from "./../../model/Wallet/index";
 import express from "express";
 import MyWallet from "../../model/Wallet";
+import walletModel from "../../model/Wallet/wallet.model";
 
 const router = express.Router();
 
-router.post("/", (req, res) => {
+router.post("/signup", (req, res) => {
   const newWalelt = new MyWallet();
+  try {
+    walletModel.create(
+      {
+        publicKey: req.body.publicKey,
+        privateKey: req.body.privateKey,
+        password: req.body.password,
+      },
+      (err, docs) => {
+        if (docs) console.log(docs);
+        else if (err) console.log(err);
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
   res.send(newWalelt);
 });
 

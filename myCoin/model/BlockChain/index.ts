@@ -117,8 +117,8 @@ class BlockChain {
     return balance;
   }
 
-  getUserHistory(address: any) {
-    const history = [];
+  getUserHistory(address) {
+    const history:Transaction[] = [];
 
     for (const block of this.chain) {
       for (const trans of block.transaction) {
@@ -131,11 +131,11 @@ class BlockChain {
   }
 
   getAllUsersHistory() {
-    const history = [];
+    const history:Transaction[] = [];
 
     for (const block of this.chain) {
       for (const trans of block.transaction) {
-        history.push(trans);
+       history.push(trans);
       }
     }
     return history;

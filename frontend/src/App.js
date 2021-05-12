@@ -3,6 +3,7 @@ import Header from '../src/Header/Header'
 import Footer from '../src/Footer/Footer'
 import Error from "./pages/Error/Error";
 import Signin from "./pages/Signin/Signin";
+import Signup from "./pages/Signup/Signup";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Signin/> 
           </Route>
           <Route exact path="/signup">
+          <Signup/> 
           </Route>
           <Route>
                   <Error />

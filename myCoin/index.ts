@@ -12,7 +12,7 @@ import Block from "./model/Block/index";
 
 // rest of the code remains same
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3001;
 
 // middlewares
 app.use(express.json());
@@ -44,20 +44,20 @@ mongoose.connection.once("open", () => {
   console.log("connected");
 });
 
-const adminWallet = new MyWallet();
+// const adminWallet = new MyWallet();
 
-const myBlockChain = BlockChain.instance;
+// const myBlockChain = BlockChain.instance;
 
-const tx1 = new Transaction("", adminWallet.publicKey, 10);
+// const tx1 = new Transaction("", adminWallet.publicKey, 10);
 
-myBlockChain.addTransaction(tx1);
+// myBlockChain.addTransaction(tx1);
 
-myBlockChain.minePendingTransactions(adminWallet.publicKey);
+// myBlockChain.minePendingTransactions(adminWallet.publicKey);
 
-console.log(
-  "my wallets",
-  myBlockChain.getBalanceOfAddress(adminWallet.publicKey)
-);
+// console.log(
+//   "my wallets",
+//   myBlockChain.getBalanceOfAddress(adminWallet.publicKey)
+// );
 
 let connectCounter = 0;
 const minerBlock: any = [];
@@ -144,7 +144,7 @@ io.on("connection", (socket) => {
       !params.publicKey ||
       MyWallet.getBalance(params.publicKey) < params.amount
     ) {
-      return callback("Invalid The Transaction");
+      return callback("Invalid amount");
     }
     try {
       const transaction = new Transaction(
