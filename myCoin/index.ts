@@ -1,117 +1,166 @@
-import * as crypto from 'crypto';
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import bodyParser from "body-parser";
+import { Server } from "socket.io";
+import TYPE from "./constant";
+import routesMdw from "./middleware/route.mdw";
+import BlockChain from "./model/BlockChain/index";
+import Transaction from "./model/Transaction";
+import MyWallet, { EC } from "./model/Wallet";
+import Block from "./model/Block/index";
 
-// Transfer of funds between two wallets
-class Transaction {
-  constructor(
-    public amount: number, 
-    public payer: string, // public key
-    public payee: string // public key
-  ) {}
+// rest of the code remains same
+const app = express();
+const PORT = process.env.PORT || 8000;
 
-  toString() {
-    return JSON.stringify(this);
-  }
-}
+// middlewares
+app.use(express.json());
+app.use(cors());
+app.use(bodyParser.json());
 
-// Individual block on the chain
-class Block {
+/*  -Configurations & server-  */
+const server = app.listen(PORT, () => {
+  console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
+});
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
 
-  public nonce = Math.round(Math.random() * 999999999);
+// Key
+const connect_URL =
+  "mongodb+srv://admin:admin@cluster0.mbewg.mongodb.net/myCoin?retryWrites=true&w=majority";
 
-  constructor(
-    public prevHash: string, 
-    public transaction: Transaction, 
-    public ts = Date.now()
-  ) {}
+mongoose.connect(connect_URL, {
+  useCreateIndex: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+});
 
-  get hash() {
-    const str = JSON.stringify(this);
-    const hash = crypto.createHash('SHA256');
-    hash.update(str).end();
-    return hash.digest('hex');
-  }
-}
+mongoose.connection.once("open", () => {
+  console.log("connected");
+});
 
+const adminWallet = new MyWallet();
 
-// The blockchain
-class Chain {
-  // Singleton instance
-  public static instance = new Chain();
+const myBlockChain = BlockChain.instance;
 
-  chain: Block[];
+const tx1 = new Transaction("", adminWallet.publicKey, 10);
 
-  constructor() {
-    this.chain = [
-      // Genesis block
-      new Block('', new Transaction(100, 'genesis', 'satoshi'))
-    ];
-  }
+myBlockChain.addTransaction(tx1);
 
-  // Most recent block
-  get lastBlock() {
-    return this.chain[this.chain.length - 1];
-  }
+myBlockChain.minePendingTransactions(adminWallet.publicKey);
 
-  // Proof of work system
-  mine(nonce: number) {
-    let solution = 1;
-    console.log('⛏️  mining...')
+console.log(
+  "my wallets",
+  myBlockChain.getBalanceOfAddress(adminWallet.publicKey)
+);
 
-    while(true) {
+let connectCounter = 0;
+const minerBlock: any = [];
 
-      const hash = crypto.createHash('MD5');
-      hash.update((nonce + solution).toString()).end();
-
-      const attempt = hash.digest('hex');
-
-      if(attempt.substr(0,4) === '0000'){
-        console.log(`Solved: ${solution}`);
-        return solution;
-      }
-
-      solution += 1;
-    }
-  }
-
-  // Add a new block to the chain if valid signature & proof of work is complete
-  addBlock(transaction: Transaction, senderPublicKey: string, signature: Buffer) {
-    const verify = crypto.createVerify('SHA256');
-    verify.update(transaction.toString());
-
-    const isValid = verify.verify(senderPublicKey, signature);
-
-    if (isValid) {
-      const newBlock = new Block(this.lastBlock.hash, transaction);
-      this.mine(newBlock.nonce);
-      this.chain.push(newBlock);
-    }
-  }
-
-}
-
-// Wallet gives a user a public/private keypair
-class Wallet {
-  public publicKey: string;
-  public privateKey: string;
-
-  constructor() {
-    const keypair = crypto.generateKeyPairSync('rsa', {
-      modulusLength: 2048,
-      publicKeyEncoding: { type: 'spki', format: 'pem' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+io.on("connection", (socket) => {
+  socket.on(TYPE.LOGIN, () => {
+    connectCounter++;
+    io.to(`${socket.id}`).emit(TYPE.LAST_BLOCK, {
+      block: BlockChain.instance.chain[BlockChain.instance.chain.length - 1],
+      difficulty: BlockChain.instance.difficulty,
+      pendingTransactions: BlockChain.instance.pendingTransactions,
     });
+  });
+  socket.on("disconnect", () => connectCounter--);
+  socket.on(TYPE.MINED, ({ block, minerAddress}) => {
+    try {
+      const newBlock = new Block(
+        block.index,
+        block.timestamp,
+        block.transaction,
+        block.previousHash,
+        block.hash,
+        block.nonce
+      );
+      minerBlock.push({ block: newBlock, minerAddress, vote: 0 });
+      socket.broadcast.emit(TYPE.MINING_A_BLOCK, block);
+    } catch (error) {}
+  });
 
-    this.privateKey = keypair.privateKey;
-    this.publicKey = keypair.publicKey;
-  }
+  socket.on(TYPE.GET_BALANCE, ({ key }, callback) => {
+    let balance = 0;
+    const value = MyWallet.wallet.map((ele) => {
+      if (ele.publicKey === key.publicKey) {
+        balance = ele.getBalance();
+        return true;
+      }
+      return false;
+    });
+    if (value.includes(true)) {
+      callback({ balance });
+    } else {
+      callback({ balance: -1 });
+    }
+  });
 
-  sendMoney(amount: number, payeePublicKey: string) {
-    const transaction = new Transaction(amount, this.publicKey, payeePublicKey);
+  socket.on(TYPE.VOTE_NEW_BLOCK, ({ block, vote }) => {
+    const result = minerBlock.findIndex((ele) => {
+      return (
+        ele.block.index === block.index &&
+        ele.block.previousHash === block.previousHash &&
+        ele.block.timestamp === block.timestamp &&
+        ele.block.hash === block.hash
+      );
+    });
+    if (result >= 0 && vote) {
+      minerBlock[result].vote++;
+      if (
+        connectCounter === 1 ||
+        minerBlock[result].vote > connectCounter / 3
+      ) {
+        const validAdd = BlockChain.instance.addBlock(minerBlock[result].block);
+        if (validAdd) {
+          const transaction = new Transaction(
+            "",
+            minerBlock[result].minerAddress,
+            BlockChain.instance.miningReward
+          );
+          minerBlock.splice(result, 1);
+          BlockChain.instance.removePendingTransaction();
+          io.emit(TYPE.LAST_BLOCK, {
+            block,
+            difficulty: BlockChain.instance.difficulty,
+            pendingTransactions: BlockChain.instance.pendingTransactions,
+          });
+          BlockChain.instance.addTransaction(transaction);
+          io.emit(TYPE.NEW_TRANSACTION, transaction);
+        }
+      }
+    }
+  });
 
-    const sign = crypto.createSign('SHA256');
-    sign.update(transaction.toString()).end();
+  socket.on(TYPE.SEND_TRANSACTION, (params, callback) => {
+    if (
+      !params.publicKey ||
+      MyWallet.getBalance(params.publicKey) < params.amount
+    ) {
+      return callback("Invalid The Transaction");
+    }
+    try {
+      const transaction = new Transaction(
+        params.publicKey,
+        params.payeePublicKey,
+        params.amount
+      );
+      const yourKey = EC.keyFromPrivate(params.privateKey);
+      transaction.signTransactions(yourKey);
+      BlockChain.instance.addTransaction(transaction);
+      io.emit(TYPE.NEW_TRANSACTION, transaction);
+    } catch (error) {
+    }
+  });
+});
 
-    const signature = sign.sign(this.privateKey); 
-    Chain.instance.addBlock(transaction, this.publicKey, signature);
-  }
-}
+app.get("/", (req, res) => res.send(JSON.stringify("Typescript")));
+
+routesMdw(app);
