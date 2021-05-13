@@ -10,6 +10,7 @@ import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
+import AddCircleIcon from '@material-ui/icons/AddCircle';
 import { makeStyles } from "@material-ui/core/styles";
 import { productAPI } from "../../config/productAPI.js";
 import * as yup from "yup";
@@ -19,6 +20,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import background from "../../img/home.jpg";
 import md5 from 'md5';
+import { TYPE } from '../../reducer/userReducer';
+import { UserContext } from '../../context/UserProvider';
 
 function Copyright() {
   return (
@@ -39,7 +42,9 @@ const schema = yup.object().shape({
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    height: "100vh",
+    height: "80vh",
+    width: "80%",
+    marginLeft: '10%'
   },
   image: {
     backgroundImage: `url(${background})`,
@@ -64,9 +69,15 @@ const useStyles = makeStyles((theme) => ({
   form: {
     width: "100%", // Fix IE 11 issue.
     marginTop: theme.spacing(1),
+    display: 'flex',
+    flexDirection: 'column'
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
+  },
+  button: {
+    color: 'blue',
+    marginTop: '5%'
   },
 }));
 
@@ -77,7 +88,11 @@ export default function Signin() {
   const history = useHistory();
   const refInput = useRef(null);
   const params = useParams();
-  //const [state, dispatch] = useContext(UserContext);
+  const [state, dispatch] = useContext(UserContext);
+  if (state.privateKey) {
+    history.push("/account");
+    //return <></>;
+}
   const {
     register,
     handleSubmit,
@@ -92,60 +107,43 @@ export default function Signin() {
     }
   );
 
-  //Keystore
-//   const handleGetFileStore = async () => {
-//     if (refInput.current.value) {
-//         dispatch({ type: TYPE.CALLING_API });
-//         const file = refInput.current.files.item(0);
-//         const text = await file.text();
-//         try {
-//             const key = JSON.parse(text);
-//             await productAPI.getWallet(JSON.parse(text)).then((res) => {
-//                 myFun("Access", "success");
-//                 dispatch({ type: TYPE.SET_USER, payload: { key, balance: res.data.balance } });
-//             }).catch(() => {
-//                 myFun("Incorrect", "danger");
-//                 dispatch({ type: TYPE.DONE_CALL });
-//             });
-//             refInput.current.value = null;
-//         } catch (error) {
-//             myFun("Incorrect", "danger");
-//             dispatch({ type: TYPE.DONE_CALL });
-//         }
-
-//     }
-// }
-
   const onSubmit = async () => {
+    // if (refInput.current.value) {
+    //     // dispatch({ type: TYPE.CALLING_API });
+    //     const file = refInput.current.files.item(0);
+    //    const text = await file.text();
+    //    const password = params.password;
+    //     try {
+    //         const key = JSON.parse(text);
+    //         await productAPI.signin(key, password).then((data) => {
+    //           history.push('/account');
+    //         }).catch((err) => {
+    //           toast.error("Invalid file!");
+    //         });
+    //         refInput.current.value = null;
+    //     } catch (error) {
+    //       toast.error("Something wrong! Try again!");
+    //     }
+    // }
+    //
     if (refInput.current.value) {
-        // dispatch({ type: TYPE.CALLING_API });
-        const file = refInput.current.files.item(0);
-       const text = await file.text();
-       const pk = params.publicKey;
-        try {
-            const key = JSON.parse(text);
-            // await productAPI.getWallet(key, pk).then((data) => {
-            //    console.log('balance:',data);
-            // }).catch((err) => {
-            //   toast.error("Invalid file!")
-            //   console.log('err',err);
-            // });
-            console.log(pk);
-            console.log(key.publicKey)
-            if (key.publicKey === pk)
-            {
-              history.push('/account');
-            }
-            else
-            {
-              toast.error("Invalid file!")
-            }
-            refInput.current.value = null;
-        } catch (error) {
-          toast.error("Something wrong! Try again!")
-           console.log(error);
-        }
-    }
+      dispatch({ type: TYPE.CALLING_API });
+      const file = refInput.current.files.item(0);
+      const text = await file.text();
+      const password = params.password;
+      try {
+          const key = JSON.parse(text);
+           await productAPI.signin(key, password).then((res) => {
+              dispatch({ type: TYPE.SET_USER, payload: { key, balance: res.data.balance } });
+          }).catch(() => {
+              dispatch({ type: TYPE.DONE_CALL });
+              toast.error('Invalid file!');
+          });
+          refInput.current.value = null;
+      } catch (error) {
+          dispatch({ type: TYPE.DONE_CALL });
+      }
+  }
   };
 
   return (
@@ -161,14 +159,14 @@ export default function Signin() {
             Sign in
           </Typography>
           <form className={classes.form} onSubmit={handleSubmit(onSubmit)}>
-            <button onClick={() => {
+            <button className = {classes.button} onClick={() => {
                     if (refInput.current) {
                         refInput.current.click();
                     }
                 }}>
                   
-                    <div>
-                        <h5>Keystore file</h5>
+                    <div className = {classes.add}>
+                        <h4>Keystore file</h4>
                         <input onChange={onSubmit} ref={refInput} style={{ display: "none" }} type="file" accept=".txt" />
                     </div>
                 </button>

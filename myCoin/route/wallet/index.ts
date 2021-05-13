@@ -2,6 +2,7 @@ import { privateKey } from "./../../model/Wallet/index";
 import express from "express";
 import MyWallet from "../../model/Wallet";
 import walletModel from "../../model/Wallet/wallet.model";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -27,10 +28,11 @@ router.post("/signup", (req, res) => {
 router.post("/password", (req, res) => {
   try {
     walletModel.find({ password: req.body.password }, (err, docs: any) => {
-      if (docs) {
+      if (docs?.length) {
         res.send(docs[0].publicKey);
       } else if (err) {
         console.log(err);
+        res.send(err)
       }
     });
   } catch (error) {
@@ -38,28 +40,29 @@ router.post("/password", (req, res) => {
   }
 });
 
-router.post("/getwallet", (req, res) => {
-  console.log(req.body.key.publicKey);
+router.post("/signin", (req, res) => {
   if (req.body?.key.publicKey) {
     const key = req.body.key.publicKey;
+    const password = req.body.password;
     //Identify
-    walletModel.find({ publicKey: key}, (err, docs: any) => {
+    walletModel.find({ publicKey: key,password:password}, (err, docs: any) => {
       if (docs) {
-        console.log(docs);
        if (docs?.length > 0) {
-        let balance = 0;
-        const value = MyWallet.wallet.map((ele) => {
-          if (ele.publicKey === key) {
-            balance = ele.getBalance();
-            return true;
+        docs[0].password = "";
+        jwt.sign(
+          JSON.stringify(docs[0]),
+          "myCoin",
+          (err,token) => {
+            if (err) {
+              res.sendStatus(503);
+            } else {
+              res.send({
+                token,
+                publicKey: docs[0].publicKey,
+              });
+            }
           }
-          return false;
-        });
-        if (value.includes(true)) {
-          res.send({ balance });
-        } else {
-          res.sendStatus(404);
-        }
+        );
        }
        else res.sendStatus(403);
       } else if (err) {

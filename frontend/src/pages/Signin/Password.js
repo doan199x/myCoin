@@ -39,7 +39,9 @@ const schema = yup.object().shape({
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    height: "100vh",
+    height: "80vh",
+    width: "80%",
+    marginLeft: '10%'
   },
   image: {
     backgroundImage: `url(${background})`,
@@ -97,15 +99,14 @@ export default function Password() {
       .password(password)
       .then((data) => {
         if (data.data) {
-          const publicKey = data.data;
-          toast.info("☑️  Mật khẩu đúng! Chọn keystore file để đăng nhập.  ☑️");
+          toast.info("☑️  Login with keystore file!  ☑️");
           //Yêu cầu đăng nhập
-          history.push(`/signin/${publicKey}`);
+          history.push(`/signin/${password}`);
         }
       })
       .catch((err) => {
         console.log(err);
-        toast.error("Mật khẩu chưa đúng!");
+        toast.error("Incorrect password!");
       });
   };
 
@@ -119,7 +120,7 @@ export default function Password() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign up
+            Sign in
           </Typography>
           <form className={classes.form} onSubmit={handleSubmit(onSubmit)}>
             <TextField
@@ -144,7 +145,7 @@ export default function Password() {
               color="primary"
               className={classes.submit}
             >
-              Sign Up
+              Sign In
             </Button>
             <Box mt={5}>
               <Copyright />

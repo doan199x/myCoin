@@ -7,7 +7,10 @@ export const productAPI = {
     password: (password) => {
       return AXIOS_INSTANCE.post(API.PASSWORD, {password});
     },
-    getWallet: (key, pk) => {
-      return AXIOS_INSTANCE.post(API.GETWALLET, {key, pk});
+    signin: (key, password) => {
+      return AXIOS_INSTANCE.post(API.SIGNIN, {key, password});
+    },
+    checkToken: () => {
+      return AXIOS_INSTANCE.post(API.CHECKTOKEN);
     },
 };

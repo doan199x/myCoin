@@ -1,6 +1,7 @@
 export const API = {
     SIGNUP: "/wallet/signup",
     PASSWORD: "/wallet/password",
-    GETWALLET: "/wallet/getwallet",
+   SIGNIN: "/wallet/signin",
+   CHECKTOKEN: "wallet/token",
   };
   
