@@ -18,7 +18,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import background from "../../img/home.jpg";
-import md5 from 'md5';
+import md5 from "md5";
 
 function Copyright() {
   return (
@@ -72,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
 
 toast.configure();
 
-export default function Signup() {
+export default function Password() {
   const classes = useStyles();
   const history = useHistory();
   const refInput = useRef(null);
@@ -94,25 +94,18 @@ export default function Signup() {
   const onSubmit = async (data) => {
     const password = md5(data.password);
     await productAPI
-      .signup(password)
+      .password(password)
       .then((data) => {
-        const element = document.createElement("a");
-        const file = new Blob([JSON.stringify(data.data)], {
-          type: "text/plain;charset=utf-8",
-        });
-        element.href = URL.createObjectURL(file);
-        element.download = "keystore.txt";
-        document.body.appendChild(element);
-        element.click();
         if (data.data) {
-          toast.info("☑️  Đăng ký thành công! Vui lòng đăng nhập.  ☑️");
+          const publicKey = data.data;
+          toast.info("☑️  Mật khẩu đúng! Chọn keystore file để đăng nhập.  ☑️");
           //Yêu cầu đăng nhập
-          history.push('/password');
+          history.push(`/signin/${publicKey}`);
         }
       })
       .catch((err) => {
         console.log(err);
-        toast.error("Gặp lỗi khi đăng ký! Vui lòng thử lại.");
+        toast.error("Mật khẩu chưa đúng!");
       });
   };
 

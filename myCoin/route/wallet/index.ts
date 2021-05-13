@@ -6,39 +6,66 @@ import walletModel from "../../model/Wallet/wallet.model";
 const router = express.Router();
 
 router.post("/signup", (req, res) => {
-  const newWalelt = new MyWallet();
+  const newWallet = new MyWallet();
   try {
     walletModel.create(
       {
-        publicKey: req.body.publicKey,
-        privateKey: req.body.privateKey,
+        publicKey: newWallet.publicKey,
+        privateKey: newWallet.privateKey,
         password: req.body.password,
       },
       (err, docs) => {
-        if (docs) console.log(docs);
-        else if (err) console.log(err);
+        if (docs) res.send(newWallet);
+        else if (err) console.log("Error: ", err);
       }
     );
   } catch (error) {
-    console.log(error);
+    console.log("Error: ", error);
   }
-  res.send(newWalelt);
+});
+
+router.post("/password", (req, res) => {
+  try {
+    walletModel.find({ password: req.body.password }, (err, docs: any) => {
+      if (docs) {
+        res.send(docs[0].publicKey);
+      } else if (err) {
+        console.log(err);
+      }
+    });
+  } catch (error) {
+    console.log("Error: ", error);
+  }
 });
 
 router.post("/getwallet", (req, res) => {
-  if (req.body?.key) {
-    const key = req.body.key;
-    let balance = 0;
-    const value = MyWallet.wallet.map((ele) => {
-      if (ele.publicKey === key.publicKey) {
-        balance = ele.getBalance();
-        return true;
+  console.log(req.body.key.publicKey);
+  if (req.body?.key.publicKey) {
+    const key = req.body.key.publicKey;
+    //Identify
+    walletModel.find({ publicKey: key}, (err, docs: any) => {
+      if (docs) {
+        console.log(docs);
+       if (docs?.length > 0) {
+        let balance = 0;
+        const value = MyWallet.wallet.map((ele) => {
+          if (ele.publicKey === key) {
+            balance = ele.getBalance();
+            return true;
+          }
+          return false;
+        });
+        if (value.includes(true)) {
+          res.send({ balance });
+        } else {
+          res.sendStatus(404);
+        }
+       }
+       else res.sendStatus(403);
+      } else if (err) {
+        console.log(err);
       }
-      return false;
     });
-    if (value.includes(true)) {
-      res.send({ balance });
-    } else res.sendStatus(404);
   }
 });
 

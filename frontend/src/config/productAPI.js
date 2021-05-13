@@ -4,4 +4,10 @@ export const productAPI = {
     signup: (password) => {
       return AXIOS_INSTANCE.post(API.SIGNUP, {password});
     },
+    password: (password) => {
+      return AXIOS_INSTANCE.post(API.PASSWORD, {password});
+    },
+    getWallet: (key, pk) => {
+      return AXIOS_INSTANCE.post(API.GETWALLET, {key, pk});
+    },
 };
