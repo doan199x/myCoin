@@ -10,14 +10,17 @@ import { UserProvider } from "./context/UserProvider";
 import reducer, { initialState } from "./reducer/userReducer";
 import UserProtect from "./context/Userprotect.js"
 import Account from "./pages/Account/Account";
+import Mining from "./pages/Mining/Mining";
+import Transaction from "./pages/Transaction/Transaction";
+import Sendcoin from "./pages/Sendcoin/Sendcoin";
 
 function App() {
   return (
     <Router>
-      <Header />
       <UserProvider initialState={initialState} reducer={reducer}>
+      <Header />
         <Switch>
-          <Route path="/signin/:password">
+          <Route path="/signin">
             <Signin />
           </Route>
           <Route exact path="/signup">
@@ -33,6 +36,15 @@ function App() {
             <Switch>
               <Route path="/account">
                 <Account />
+              </Route>
+              <Route path="/mining">
+                <Mining/>
+              </Route>
+              <Route path="/transaction">
+                <Transaction />
+              </Route>
+              <Route path="/sendcoin">
+                <Sendcoin />
               </Route>
             </Switch>
           </UserProtect>

@@ -107,7 +107,7 @@ export default function Signup() {
         if (data.data) {
           toast.info("☑️  Đăng ký thành công! Vui lòng đăng nhập.  ☑️");
           //Yêu cầu đăng nhập
-          history.push('/password');
+          history.push('/signin');
         }
       })
       .catch((err) => {

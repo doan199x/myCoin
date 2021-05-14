@@ -28,11 +28,10 @@ router.post("/signup", (req, res) => {
 router.post("/password", (req, res) => {
   try {
     walletModel.find({ password: req.body.password }, (err, docs: any) => {
-      if (docs?.length) {
+      if (docs?.length > 0) {
         res.send(docs[0].publicKey);
-      } else if (err) {
-        console.log(err);
-        res.send(err)
+      } else {
+        res.sendStatus(403)
       }
     });
   } catch (error) {
@@ -45,30 +44,26 @@ router.post("/signin", (req, res) => {
     const key = req.body.key.publicKey;
     const password = req.body.password;
     //Identify
-    walletModel.find({ publicKey: key,password:password}, (err, docs: any) => {
-      if (docs) {
-       if (docs?.length > 0) {
-        docs[0].password = "";
-        jwt.sign(
-          JSON.stringify(docs[0]),
-          "myCoin",
-          (err,token) => {
-            if (err) {
-              res.sendStatus(503);
-            } else {
-              res.send({
-                token,
-                publicKey: docs[0].publicKey,
-              });
-            }
+    // walletModel.find({ publicKey: key,password:password}, (err, docs: any) => {
+    //   if (docs) {
+    //    if (docs?.length > 0) {
+        let balance = 0;
+        const publicKey = key;
+        const value = MyWallet.wallet.map((ele) => {
+          if (ele.publicKey === publicKey) {
+            balance = ele.getBalance();
+            return true;
           }
-        );
-       }
-       else res.sendStatus(403);
-      } else if (err) {
-        console.log(err);
-      }
-    });
+          return false;
+        });
+        if (value.includes(true)) {
+          res.send({ balance });
+        } else res.sendStatus(404);
+        // res.send(docs[0]);
+    //   }
+    //    }
+    //    else res.sendStatus(403);
+    // });
   }
 });
 

@@ -16,7 +16,7 @@ export default function Home() {
        <div className = "main">
          <div className = "main__box">
         
-         <Button href= "/password" 
+         <Button href= "/signin"
          variant="contained" 
          color="secondary">
         Sign in

@@ -90,7 +90,7 @@ export default function Signin() {
   const params = useParams();
   const [state, dispatch] = useContext(UserContext);
   if (state.privateKey) {
-    history.push("/account");
+    history.push("/");
     //return <></>;
 }
   const {
@@ -166,7 +166,7 @@ export default function Signin() {
                 }}>
                   
                     <div className = {classes.add}>
-                        <h4>Keystore file</h4>
+                        <small>Keystore file</small>
                         <input onChange={onSubmit} ref={refInput} style={{ display: "none" }} type="file" accept=".txt" />
                     </div>
                 </button>

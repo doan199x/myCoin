@@ -12,8 +12,13 @@ const UserProtect = ({ children }) => {
             </>
         );
     }
-    history.push("/");
-    return <></>;
+    else {
+        // history.push("/account");
+        // return <></>;
+        history.push("/");
+        return null;
+    }
+    
 }
 
 export default UserProtect;

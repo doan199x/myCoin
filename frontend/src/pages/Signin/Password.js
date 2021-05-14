@@ -98,10 +98,14 @@ export default function Password() {
     await productAPI
       .password(password)
       .then((data) => {
+        console.log(data)
         if (data.data) {
           toast.info("☑️  Login with keystore file!  ☑️");
           //Yêu cầu đăng nhập
           history.push(`/signin/${password}`);
+        }
+        else {
+          toast.error("Incorrect password!");
         }
       })
       .catch((err) => {

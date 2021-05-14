@@ -101,16 +101,16 @@ class BlockChain {
     this.pendingTransactions.push(transaction);
   }
 
-  getBalanceOfAddress(address: any) {
+  getBalanceOfAddress(address) {
     let balance = 0;
     for (const block of this.chain) {
       for (const trans of block.transaction) {
         if (trans.fromAddress === address) {
-          balance -= trans.amount;
+          balance -= +trans.amount;
         }
 
         if (trans.toAddress === address) {
-          balance += trans.amount;
+          balance += +trans.amount;
         }
       }
     }
