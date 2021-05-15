@@ -1,17 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import { fade, makeStyles } from "@material-ui/core/styles";
+import React, { useContext, useEffect } from "react";
+import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import MenuItem from "@material-ui/core/MenuItem";
-import Menu from "@material-ui/core/Menu";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import logourl from "../img/logo.png";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { UserContext } from "../context/UserProvider";
-import { Button } from "@material-ui/core";
+import { Button, Tooltip } from "@material-ui/core";
 import { TYPE } from '../reducer/userReducer.js';
+import { EMIT_TYPE } from "../constant/API";
+import socket from "../config/socketio";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -86,6 +86,50 @@ export default function Header() {
   const handleLogOut = () => {
     dispatch({ type: TYPE.LOGOUT, payload: {} });
   };
+  useEffect(() => {
+    if (state.privateKey) {
+      socket.emit(EMIT_TYPE.GET_BLOCKCHAIN, (blockchain) => {
+        blockchain.chain.reverse();
+        dispatch({ type: TYPE.SET_BLOCKCHAIN, payload: { blockchain: blockchain } })
+      })
+      socket.on(EMIT_TYPE.HISTORY_BLOCKCHAIN, (blockchain) => {
+        blockchain.chain.reverse();
+        dispatch({ type: TYPE.SET_BLOCKCHAIN, payload: { blockchain: blockchain } })
+      })
+    }
+    return () => {
+      if (state.privateKey) {
+        socket.removeEventListener(EMIT_TYPE.HISTORY_BLOCKCHAIN);
+      }
+    }
+  }, [dispatch, state.privateKey]);
+
+  useEffect(() => {
+    if (state.privateKey) {
+      socket.on(
+        EMIT_TYPE.LAST_BLOCK,
+        async () => {
+          const key = {
+            privateKey: state.privateKey,
+            publicKey: state.publicKey,
+          };
+          socket.emit(EMIT_TYPE.GET_BALANCE, { key }, ({ balance }) => {
+            console.log(balance);
+            if (balance >= 0) {
+              dispatch({ type: TYPE.SET_BALANCE, payload: { balance } });
+            }
+          });
+        }
+      );
+    }
+
+    return () => {
+      if (state.privateKey) {
+        socket.removeEventListener(EMIT_TYPE.LAST_BLOCK);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, state.publicKey, state.publicKey]);
 
   return (
     <div className={classes.grow}>
@@ -96,12 +140,12 @@ export default function Header() {
             className={classes.menuButton}
             color="inherit"
             aria-label="open drawer"
-            onClick = { () => history.push("/")}
+            onClick={() => history.push("/")}
             style={{ backgroundColor: "transparent" }}
             disableRipple={true}
           >
             <div>
-              <img src={logourl} className={classes.logo} />
+              <img alt="" src={logourl} className={classes.logo} />
             </div>
           </Button>
           <Typography className={classes.title} variant="h4" noWrap>
@@ -111,7 +155,7 @@ export default function Header() {
             {state.privateKey ? (
               <div className={classes.linkgroup}>
                 <Button
-                  onClick = { () => history.push("/mining")}
+                  onClick={() => history.push("/mining")}
                   className={classes.link}
                   variant="h5"
                   noWrap
@@ -119,7 +163,7 @@ export default function Header() {
                   MINING
                 </Button>
                 <Button
-                 onClick = { () => history.push("/transaction")}
+                  onClick={() => history.push("/transaction")}
                   className={classes.link}
                   variant="h4"
                   noWrap
@@ -127,21 +171,24 @@ export default function Header() {
                   TRANSACTION
                 </Button>
                 <Button
-                 onClick = { () => history.push("/sendcoin")}
+                  onClick={() => history.push("/sendcoin")}
                   className={classes.link}
                   variant="h4"
                   noWrap
                 >
-                 SEND COIN
+                  SEND COIN
                 </Button>
                 <Button
-                 onClick = { () => history.push("/account")}
+                  onClick={() => history.push("/account")}
                   className={classes.link}
                   variant="h4"
                   noWrap
                 >
-                 BALANCE: {state.balance}
+                  BALANCE: {state.balance}
                 </Button>
+                <Tooltip title={state.publicKey} aria-label={state.publicKey}>
+                  <div className="wallet">wallet: {state.publicKey}</div>
+                </Tooltip>
               </div>
             ) : (
               <></>

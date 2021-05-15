@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import Block from "../Block";
 import Transaction from "./../Transaction";
 
@@ -10,7 +8,7 @@ class BlockChain {
   miningReward: number;
   public static instance = new BlockChain();
   constructor() {
-    this.difficulty = 3;
+    this.difficulty = 4;
     this.miningReward = 10;
     this.pendingTransactions = [];
     this.chain = [this.getGenesisBlock()];
@@ -60,10 +58,15 @@ class BlockChain {
         newBlock.transaction.length
       );
       this.chain.push(newBlock);
+      this.removePendingTransactionBlock(newBlock);
     }
 
     return valid;
   };
+
+  removePendingTransactionBlock(newBlock) {
+    this.pendingTransactions.splice(0, newBlock.transaction.length);
+  }
 
   removePendingTransaction() {
     this.pendingTransactions.splice(
@@ -72,7 +75,7 @@ class BlockChain {
     );
   }
 
-  minePendingTransactions(miningRewardAddress: any) {
+  minePendingTransactions(miningRewardAddress) {
     const index = this.chain[this.chain.length - 1].index + 1;
     const block = new Block(
       index,
@@ -85,7 +88,7 @@ class BlockChain {
     this.chain.push(block);
 
     this.pendingTransactions = [
-      new Transaction("", miningRewardAddress, this.miningReward),
+      new Transaction(null, miningRewardAddress, this.miningReward),
     ];
   }
 
@@ -102,13 +105,12 @@ class BlockChain {
   }
 
   getBalanceOfAddress(address) {
-    let balance = 0;
+    let balance = 10;
     for (const block of this.chain) {
       for (const trans of block.transaction) {
         if (trans.fromAddress === address) {
           balance -= +trans.amount;
         }
-
         if (trans.toAddress === address) {
           balance += +trans.amount;
         }
@@ -118,7 +120,7 @@ class BlockChain {
   }
 
   getUserHistory(address) {
-    const history:Transaction[] = [];
+    const history: any = [];
 
     for (const block of this.chain) {
       for (const trans of block.transaction) {
@@ -131,11 +133,11 @@ class BlockChain {
   }
 
   getAllUsersHistory() {
-    const history:Transaction[] = [];
+    const history: any = [];
 
     for (const block of this.chain) {
       for (const trans of block.transaction) {
-       history.push(trans);
+        history.push(trans);
       }
     }
     return history;
@@ -143,17 +145,41 @@ class BlockChain {
 
   isValidNewBlock = (newBlock: Block, previousBlock: Block) => {
     if (previousBlock.index + 1 !== newBlock.index) {
-      console.log("INVALID INDEX");
+      //console.log("INVALID INDEX");
       return false;
     } else if (previousBlock.hash !== newBlock.previousHash) {
-      console.log("INVALID PREVIOUSHASH");
+      //console.log("INVALID PREVIOUSHASH");
       return false;
     } else if (newBlock.calculateHash() !== newBlock.hash) {
-      console.log("INVALID HASH");
+      // console.log("INVALID HASH");
+      return false;
+    } else if (newBlock.index !== 0 && newBlock.transaction.length === 0) {
+      return false;
+    } else if (!this.isValidTransaction(newBlock.transaction)) {
+      // console.log("INVALID transaction");
       return false;
     }
     return true;
   };
+
+  isValidTransaction(transaction) {
+    if (transaction.length - 1 > this.pendingTransactions.length) {
+      return false;
+    }
+    let reward = 0;
+    for (let i = 0; i < transaction.length; i++) {
+      if (transaction[i].fromAddress === null) {
+        if (transaction[i].amount !== BlockChain.instance.miningReward) {
+          return false;
+        }
+        reward++;
+      }
+      if (reward > 1) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   isValidChain = (blockchainToValiddate: BlockChain = this) => {
     if (
@@ -171,7 +197,7 @@ class BlockChain {
       if (
         this.isValidNewBlock(blockchainToValiddate.chain[i], tempBlocks[i - 1])
       ) {
-        //tempBlocks.push(blockchainToValiddate[i]);
+        tempBlocks.push(blockchainToValiddate[i]);
       } else return false;
     }
     return true;
@@ -187,7 +213,7 @@ class BlockChain {
       // need to boardcast here
       // boardcast(responseLatestMag());
     } else {
-      console.log("Received blockchain invalid");
+      console.log("Recived blockchain invalid");
     }
   };
 }

@@ -64,15 +64,14 @@ const minerBlock: any = [];
 
 io.on("connection", (socket) => {
   socket.on(TYPE.LOGIN, () => {
-    connectCounter++;
     io.to(`${socket.id}`).emit(TYPE.LAST_BLOCK, {
       block: BlockChain.instance.chain[BlockChain.instance.chain.length - 1],
       difficulty: BlockChain.instance.difficulty,
       pendingTransactions: BlockChain.instance.pendingTransactions,
     });
   });
-  socket.on("disconnect", () => connectCounter--);
-  socket.on(TYPE.MINED, ({ block, minerAddress}) => {
+
+  socket.on(TYPE.MINING_DONE_A_BLOCK, ({ block, minerAddress }) => {
     try {
       const newBlock = new Block(
         block.index,
@@ -82,9 +81,26 @@ io.on("connection", (socket) => {
         block.hash,
         block.nonce
       );
-      minerBlock.push({ block: newBlock, minerAddress, vote: 0 });
-      socket.broadcast.emit(TYPE.MINING_A_BLOCK, block);
+      if (connectCounter === 1 || connectCounter === 2) {
+        const validAdd = BlockChain.instance.addBlock(newBlock);
+        if (validAdd) {
+          io.emit(TYPE.LAST_BLOCK, {
+            block,
+            difficulty: BlockChain.instance.difficulty,
+            pendingTransactions: BlockChain.instance.pendingTransactions,
+          });
+          io.emit(TYPE.HISTORY_BLOCKCHAIN, BlockChain.instance);
+        }
+      } else {
+        minerBlock.push({ block: newBlock, minerAddress, vote: 0 });
+        socket.broadcast.emit(TYPE.MINING_ABLOCK, block);
+      }
     } catch (error) {}
+  });
+
+  // Listen client get the blockchain
+  socket.on(TYPE.GET_BLOCKCHAIN, (callback) => {
+    callback(BlockChain.instance);
   });
 
   socket.on(TYPE.GET_BALANCE, ({ key }, callback) => {
@@ -103,6 +119,15 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on(TYPE.START_MINING, (callback) => {
+    connectCounter++;
+    callback(BlockChain.instance.pendingTransactions,BlockChain.instance.getLastestBlock());
+  });
+
+  socket.on(TYPE.STOP_MINING, () => {
+    connectCounter--;
+  });
+
   socket.on(TYPE.VOTE_NEW_BLOCK, ({ block, vote }) => {
     const result = minerBlock.findIndex((ele) => {
       return (
@@ -115,25 +140,17 @@ io.on("connection", (socket) => {
     if (result >= 0 && vote) {
       minerBlock[result].vote++;
       if (
-        connectCounter === 1 ||
-        minerBlock[result].vote > connectCounter / 3
+        minerBlock[result].vote >= connectCounter / 2
       ) {
         const validAdd = BlockChain.instance.addBlock(minerBlock[result].block);
         if (validAdd) {
-          const transaction = new Transaction(
-            "",
-            minerBlock[result].minerAddress,
-            BlockChain.instance.miningReward
-          );
           minerBlock.splice(result, 1);
-          BlockChain.instance.removePendingTransaction();
           io.emit(TYPE.LAST_BLOCK, {
             block,
             difficulty: BlockChain.instance.difficulty,
             pendingTransactions: BlockChain.instance.pendingTransactions,
           });
-          BlockChain.instance.addTransaction(transaction);
-          io.emit(TYPE.NEW_TRANSACTION, transaction);
+          io.emit(TYPE.HISTORY_BLOCKCHAIN, BlockChain.instance);
         }
       }
     }
@@ -144,7 +161,7 @@ io.on("connection", (socket) => {
       !params.publicKey ||
       MyWallet.getBalance(params.publicKey) < params.amount
     ) {
-      return callback("Invalid amount");
+      return io.to(`${socket.id}`).emit(TYPE.LISTENING_SEND_TRANSACTION, false);
     }
     try {
       const transaction = new Transaction(
@@ -156,11 +173,13 @@ io.on("connection", (socket) => {
       transaction.signTransactions(yourKey);
       BlockChain.instance.addTransaction(transaction);
       io.emit(TYPE.NEW_TRANSACTION, transaction);
+      io.to(`${socket.id}`).emit(TYPE.LISTENING_SEND_TRANSACTION, true);
     } catch (error) {
+      io.to(`${socket.id}`).emit(TYPE.LISTENING_SEND_TRANSACTION, false);
     }
   });
 });
 
-app.get("/", (req, res) => res.send(JSON.stringify("Typescript")));
+app.get("/", (req, res) => res.send("WELCOME"));
 
 routesMdw(app);

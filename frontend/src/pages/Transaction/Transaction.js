@@ -1,13 +1,12 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+/* eslint-disable array-callback-return */
+import React, { useContext } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { DataGrid } from "@material-ui/data-grid";
 //mport clone from "clone";
 import nodata from "../../img/nodata.jpg";
-import { Button, Divider, TextField } from "@material-ui/core";
-import { productAPI } from "../../config/productAPI.js";
-import { TYPE } from "../../reducer/userReducer";
 import { UserContext } from "../../context/UserProvider";
 import { useHistory } from "react-router";
+import { Tooltip } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   grid: {
@@ -31,31 +30,67 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Transaction() {
-  const [state, dispatch] = useContext(UserContext);
+  const [state] = useContext(UserContext);
   const history = useHistory();
-  const transaction = [{fromAddress: "sample", toAddress: "sample", amount: "10"},
-{fromAddress: "sample", toAddress: "sample", amount: "10"},
-{fromAddress: "sample", toAddress: "sample", amount: "10"}]
   if (state.privateKey) {
-    
+
   }
   else {
     history.push("/");
     //return <></>;
   }
-  useEffect(() => {
-//
-  },[]);
+
+  const transactions = [];
+
+  state.blockchain.chain.map(block => {
+    block.transaction.map(trans => transactions.push(trans));
+  })
+
   const columns = [
-    { field: "id", headerName: "ID", width: 100 },
-    { field: "fromAddress", headerName: "From Address", width: 300 },
-    { field: "toAddress", headerName: "To Address", width: 300 },
-    { field: "amount", headerName: "Amount", width: 150 },
+    { field: "id", headerName: "LASTEST", width: 100 },
+    {
+      field: "fromAddress", headerName: "From Address", renderCell: (params) => (
+        <Tooltip title={params.formattedValue} >
+          <span className="table-cell-trucate">{params.formattedValue}</span>
+        </Tooltip>
+      ), sortable: false, width: 400
+    },
+    {
+      field: "toAddress", headerName: "To Address", renderCell: (params) => (
+        <Tooltip title={params.formattedValue} >
+          <span className="table-cell-trucate">{params.formattedValue}</span>
+        </Tooltip>
+      ), sortable: false, width: 400
+    },
+    { field: "amount", headerName: "Amount", sortable: false, width: 100 },
   ];
 
-  if (transaction?.length > 0) {
-    for (let i = 0; i < transaction.length; i++) {
-        transaction[i].id = i;
+  const columnsBlockChain = [
+    { field: "id", headerName: "Lasted", width: 100 },
+    { field: "index", headerName: "index", width: 100 },
+    {
+      field: "transaction", headerName: "Transactions", renderCell: (params) => (
+        <div>{params.formattedValue.length}</div>
+      ), sortable: false, width: 400
+    },
+    {
+      field: "hash", headerName: "Hash", sortable: false, width: 400
+    },
+    { field: "Miner", headerName: "Miner", sortable: false, width: 100 },
+  ];
+
+  if (transactions?.length > 0) {
+    for (let i = 0; i < transactions.length; i++) {
+      transactions[i].id = i;
+      if (transactions[i].fromAddress===""){
+        transactions[i].fromAddress = "SYSTEM";
+      }
+    }
+  }
+  const newBlockChain = [...state.blockchain.chain];
+  if (state.blockchain.chain.length > 0){
+    for (let i = 0; i < state.blockchain.chain.length; i++) {
+      newBlockChain[i].id = i;
     }
   }
   const classes = useStyles();
@@ -69,14 +104,34 @@ export default function Transaction() {
           </h2>
         </div>
         <div className={classes.grid}>
-          {transaction ? (
-            <div style={{ height: "400px", width: "1000px" }}>
-              <DataGrid rows={transaction} columns={columns} pageSize={5} />
-            </div>
+          {transactions.length > 0 ? (
+            <>
+              <div style={{ height: "400px", width: "1000px" }}>
+                <DataGrid rows={transactions} columns={columns} pageSize={5} />
+              </div>
+            </>
           ) : (
             <div>
-              <img src={nodata} className={classes.img} />
+              <img src={nodata} alt="" className={classes.img} />
             </div>
+          )}
+        </div>
+        <div className={classes.line}>
+          <h2 style={{ textAlign: "center", color: "#00033e" }}>
+            {" "}
+            Lastest Block
+          </h2>
+        </div>
+        <div className={classes.grid}>
+          {state.blockchain.chain.length > 0 ? (
+            <>
+              <div style={{ height: "400px", width: "1000px" }}>
+                <DataGrid rows={state.blockchain.chain} columns={columnsBlockChain} pageSize={5} />
+              </div>
+            </>
+          ) : (
+            <>
+            </>
           )}
         </div>
       </div>

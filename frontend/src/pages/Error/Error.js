@@ -1,4 +1,4 @@
-import { FormHelperText, makeStyles } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core'
 import React from 'react'
 import error from "../../img/error.jpg"
 
@@ -16,7 +16,7 @@ export default function Error() {
     const classes= useStyles();
     return (
         <div className = {classes.div}>
-            <img className = {classes.img}  src = {error}/>
+            <img className = {classes.img} alt=""  src = {error}/>
         </div>
     )
 }

@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from "react";
+import React from "react";
 import { useHistory } from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
@@ -77,7 +77,6 @@ toast.configure();
 export default function Password() {
   const classes = useStyles();
   const history = useHistory();
-  const refInput = useRef(null);
   //const [state, dispatch] = useContext(UserContext);
   const {
     register,

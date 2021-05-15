@@ -1,4 +1,23 @@
-body{
+body {
   // font-family: 'Montserrat', sans-serif;
-  font-family: "-apple-system,BlinkMacSystemFont","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  font-family: "-apple-system,BlinkMacSystemFont", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+}
+
+.table-cell-trucate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wallet {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 180px;
+  align-items: center;
+  display: flex;
+  font-weight: 600;
+  font-size: 16px;
 }

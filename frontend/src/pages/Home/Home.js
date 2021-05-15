@@ -7,7 +7,7 @@ import { UserContext } from '../../context/UserProvider';
 
 export default function Home() {
   const history = useHistory();
-  const [state, dispatch] = useContext(UserContext);
+  const [state] = useContext(UserContext);
   if (state.privateKey) {
     history.push("/account");
     return <></>;
@@ -26,7 +26,7 @@ export default function Home() {
          </Button>
          </div>
          <div className= "main__div">
-          <img className = "main__img" src = {homeurl}/>
+          <img className = "main__img" alt="" src = {homeurl}/>
         </div>
        </div>
 

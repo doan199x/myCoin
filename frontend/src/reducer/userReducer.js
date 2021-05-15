@@ -5,7 +5,8 @@ export const TYPE = {
   DONE_CALL: "DONE_CALL",
   BEGIN_MINER: "BEGIN_MINER",
   STOP_MINER: "STOP_MINER",
-  SET_BALANCE: "SET_BALANCE"
+  SET_BALANCE: "SET_BALANCE",
+  SET_BLOCKCHAIN: "SET_BLOCKCHAIN"
 }
 
 export const initialState = {
@@ -13,7 +14,8 @@ export const initialState = {
   publicKey: "",
   isLoading: false,
   balance: 0,
-  isMining: false
+  isMining: false,
+  blockchain: { chain: [] },
 };
 
 const reducer = (state, action) => {
@@ -42,6 +44,9 @@ const reducer = (state, action) => {
       return infoToken;
     case TYPE.STOP_MINER:
       infoToken.isMining = false;
+      return infoToken;
+    case TYPE.SET_BLOCKCHAIN:
+      infoToken.blockchain = action.payload.blockchain;
       return infoToken;
     default:
       return state;

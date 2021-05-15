@@ -1,16 +1,13 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useRef } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
-import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import TextField from "@material-ui/core/TextField";
 import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
 import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
-import AddCircleIcon from '@material-ui/icons/AddCircle';
 import { makeStyles } from "@material-ui/core/styles";
 import { productAPI } from "../../config/productAPI.js";
 import * as yup from "yup";
@@ -19,7 +16,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import background from "../../img/home.jpg";
-import md5 from 'md5';
 import { TYPE } from '../../reducer/userReducer';
 import { UserContext } from '../../context/UserProvider';
 
@@ -96,10 +92,12 @@ export default function Signin() {
   const {
     register,
     handleSubmit,
+    // eslint-disable-next-line no-unused-vars
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
+  // eslint-disable-next-line no-unused-vars
   const { ref: passwordFormHookRef, ...passwordFormHookRest } = register(
     "password",
     {

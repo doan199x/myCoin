@@ -33,7 +33,7 @@ const useStyles = makeStyles({
   });
 
 export default function Account() {
-    const [state, dispatch] = useContext(UserContext);
+    const [state] = useContext(UserContext);
     const classes = useStyles();
     const history = useHistory();
   const bull = <span className={classes.bullet}>•</span>;

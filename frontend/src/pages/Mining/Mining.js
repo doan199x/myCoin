@@ -16,8 +16,10 @@ export default function Mining() {
 
   const handleMining = () => {
     if (!state.isMining) {
-      socket.emit(EMIT_TYPE.START_MINING, (pentrans) => {
+      socket.emit(EMIT_TYPE.START_MINING, (pentrans, lastBlock) => {
+        pentrans.push(myReward());
         setPendingTransactions(pentrans);
+        setLastBlock(lastBlock);
       });
       dispatch({ type: TYPE.BEGIN_MINER });
     } else {
@@ -27,13 +29,24 @@ export default function Mining() {
   };
 
   useEffect(() => {
+
+    return () => {
+      if (state.isMining) {
+        toast.error("Mining cancel");
+        dispatch({ type: TYPE.STOP_MINER });
+        socket.emit(EMIT_TYPE.STOP_MINING);
+      }
+    };
+  }, [dispatch, state.isMining]);
+
+  useEffect(() => {
     if (state.isMining && blockMining) {
-        socket.emit(EMIT_TYPE.MINING_DONE_A_BLOCK, ({ block: blockMining, minerAddress: state.publicKey }));
+      socket.emit(EMIT_TYPE.MINING_DONE_A_BLOCK, ({ block: blockMining, minerAddress: state.publicKey }));
     }
     return () => {
-        socket.removeEventListener(EMIT_TYPE.MINING_DONE_A_BLOCK);
+      socket.removeEventListener(EMIT_TYPE.MINING_DONE_A_BLOCK);
     };
-}, [blockMining, state.isMining, state.publicKey]);
+  }, [blockMining, state.isMining, state.publicKey]);
 
   useEffect(() => {
     if (state.isMining && lastBlock) {
@@ -52,22 +65,24 @@ export default function Mining() {
     }
 
     return () => {
-      if (state.isMining) {
-        toast.error("Mining cancel");
-        socket.emit(EMIT_TYPE.STOP_MINING);
-      }
       socket.removeEventListener(EMIT_TYPE.NEW_TRANSACTION);
       socket.removeEventListener(EMIT_TYPE.MINING_ABLOCK);
     };
   }, [state.isMining, pendingTransactions, lastBlock, difficulty]);
 
   useEffect(() => {
-    if (state.isMining) {
-      setBlockMining(
-        minePendingTransactions(pendingTransactions, difficulty, lastBlock)
-      );
+    if (state.isMining && lastBlock) {
+      if (pendingTransactions.length > 1) {
+        setBlockMining(
+          minePendingTransactions(pendingTransactions, difficulty, lastBlock)
+        );
+      }
     }
   }, [difficulty, lastBlock, pendingTransactions, state.isMining]);
+
+  const myReward = () => {
+    return { fromAddress: null, toAddress: state.publicKey, amount: state.blockchain.miningReward };
+  }
 
   useEffect(() => {
     socket.on(
@@ -75,22 +90,16 @@ export default function Mining() {
       async ({ block, difficulty, pendingTransactions }) => {
         setLastBlock(block);
         setDifficulty(difficulty);
+        pendingTransactions.push(myReward());
         setPendingTransactions(pendingTransactions);
-        const key = {
-          primaryKey: state.primaryKey,
-          publicKey: state.publicKey,
-        };
-        socket.emit(EMIT_TYPE.GET_BALANCE, { key }, ({ balance }) => {
-          if (balance >= 0) {
-            dispatch({ type: TYPE.SET_BALANCE, payload: { balance } });
-          }
-        });
       }
     );
     return () => {
       socket.removeEventListener(EMIT_TYPE.LAST_BLOCK);
     };
-  }, [dispatch, state.primaryKey, state.publicKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, state.publicKey, state.publicKey]);
+
 
   return (
     <div style={{ textAlign: "center" }}>
