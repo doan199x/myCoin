@@ -64,16 +64,19 @@ const useStyles = makeStyles((theme) => ({
   },
   form: {
     width: "100%", // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
+    marginTop: '10%',
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
   button: {
+    height: '100px',
+    width: '50%',
     color: 'blue',
-    marginTop: '5%'
+    marginTop: '5%',
+    marginLeft: '25%'
   },
 }));
 
@@ -164,7 +167,7 @@ export default function Signin() {
                 }}>
                   
                     <div className = {classes.add}>
-                        <small>Keystore file</small>
+                        <h3>Keystore file</h3>
                         <input onChange={onSubmit} ref={refInput} style={{ display: "none" }} type="file" accept=".txt" />
                     </div>
                 </button>

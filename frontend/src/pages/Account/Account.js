@@ -44,7 +44,7 @@ export default function Account() {
         <Card className={classes.root}>
       <CardContent>
         <Typography className={classes.title} color="textSecondary" gutterBottom>
-          My Coin wallet
+          Wallet
         </Typography>
         <Typography variant="h5" component="h2">
           Account{bull}detail

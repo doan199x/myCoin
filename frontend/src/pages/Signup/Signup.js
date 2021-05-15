@@ -34,7 +34,7 @@ function Copyright() {
 }
 
 const schema = yup.object().shape({
-  password: yup.string().required("Mật khẩu không được bỏ trống!").min(9),
+  password: yup.string().email("Đây không phải email hợp lệ!"),
 });
 
 const useStyles = makeStyles((theme) => ({
@@ -83,17 +83,17 @@ export default function Signup() {
   } = useForm({
     resolver: yupResolver(schema),
   });
-  const { ref: passwordFormHookRef, ...passwordFormHookRest } = register(
-    "password",
+  const { ref: emailFormHookRef, ...emailFormHookRest } = register(
+    "email",
     {
       required: "true",
     }
   );
 
   const onSubmit = async (data) => {
-    const password = md5(data.password);
+    const email = data.email;
     await productAPI
-      .signup(password)
+      .signup(email)
       .then((data) => {
         const element = document.createElement("a");
         const file = new Blob([JSON.stringify(data.data)], {
@@ -131,17 +131,16 @@ export default function Signup() {
             <TextField
               variant="outlined"
               margin="normal"
-              required
               fullWidth
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              name="password"
-              inputRef={passwordFormHookRef}
-              {...passwordFormHookRest}
-              error={!!errors.password}
-              helperText={errors?.password?.message}
+              label="Email (Không bắt buộc)"
+              type="email"
+              id="email"
+              autoComplete="current-email"
+              name="email"
+              inputRef={emailFormHookRef}
+              {...emailFormHookRest}
+              error={!!errors.email}
+              helperText={errors?.email?.message}
             />
             <Button
               type="submit"

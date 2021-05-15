@@ -12,6 +12,8 @@ import { Button, Tooltip } from "@material-ui/core";
 import { TYPE } from '../reducer/userReducer.js';
 import { EMIT_TYPE } from "../constant/API";
 import socket from "../config/socketio";
+import copy from 'copy-to-clipboard';
+import { toast } from "react-toastify";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -78,6 +80,12 @@ const useStyles = makeStyles((theme) => ({
     textDecoration: "none",
   },
 }));
+toast.configure()
+const copyKey = (key) => {
+  console.log(key)
+  copy(key);
+  toast.info("Copied!")
+}
 
 export default function Header() {
   const classes = useStyles();
@@ -186,9 +194,11 @@ export default function Header() {
                 >
                   BALANCE: {state.balance}
                 </Button>
-                <Tooltip title={state.publicKey} aria-label={state.publicKey}>
-                  <div className="wallet">wallet: {state.publicKey}</div>
-                </Tooltip>
+                <Button title={state.publicKey}
+                 aria-label={state.publicKey}
+                 onClick = {() => copyKey(state.publicKey)}>
+                  Copy key 
+                </Button>
               </div>
             ) : (
               <></>

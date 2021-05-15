@@ -102,10 +102,10 @@ export default function Mining() {
 
 
   return (
-    <div style={{ textAlign: "center" }}>
+    <div style={{ textAlign: "center", margin: '20%' }}>
       <Button variant="contained" color="primary" onClick={handleMining}>
         {" "}
-        {state.isMining ? "Stop Mining" : "Mining"}
+        {state.isMining ? "Stop Mining" : "Start Mining"}
       </Button>
     </div>
   );

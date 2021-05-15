@@ -8,21 +8,22 @@ const router = express.Router();
 
 router.post("/signup", (req, res) => {
   const newWallet = new MyWallet();
-  try {
-    walletModel.create(
-      {
-        publicKey: newWallet.publicKey,
-        privateKey: newWallet.privateKey,
-        password: req.body.password,
-      },
-      (err, docs) => {
-        if (docs) res.send(newWallet);
-        else if (err) console.log("Error: ", err);
-      }
-    );
-  } catch (error) {
-    console.log("Error: ", error);
-  }
+  res.send(newWallet);
+  // try {
+  //   walletModel.create(
+  //     {
+  //       publicKey: newWallet.publicKey,
+  //       privateKey: newWallet.privateKey,
+  //       password: req.body.password,
+  //     },
+  //     (err, docs) => {
+  //       if (docs) res.send(newWallet);
+  //       else if (err) console.log("Error: ", err);
+  //     }
+  //   );
+  // } catch (error) {
+  //   console.log("Error: ", error);
+  // }
 });
 
 router.post("/password", (req, res) => {
