@@ -8,7 +8,7 @@ class BlockChain {
   miningReward: number;
   public static instance = new BlockChain();
   constructor() {
-    this.difficulty = 4;
+    this.difficulty = 3;
     this.miningReward = 10;
     this.pendingTransactions = [];
     this.chain = [this.getGenesisBlock()];

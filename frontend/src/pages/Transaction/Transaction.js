@@ -47,7 +47,7 @@ export default function Transaction() {
   })
 
   const columns = [
-    { field: "id", headerName: "LASTEST", width: 100 },
+    { field: "id", headerName: "Latest", width: 120 },
     {
       field: "fromAddress", headerName: "From Address", renderCell: (params) => (
         <Tooltip title={params.formattedValue} >
@@ -62,7 +62,7 @@ export default function Transaction() {
         </Tooltip>
       ), sortable: false, width: 400
     },
-    { field: "amount", headerName: "Amount", sortable: false, width: 100 },
+    { field: "amount", headerName: "Amount", sortable: false, width: 150 },
   ];
 
   const columnsBlockChain = [
@@ -71,18 +71,18 @@ export default function Transaction() {
     {
       field: "transaction", headerName: "Transactions", renderCell: (params) => (
         <div>{params.formattedValue.length}</div>
-      ), sortable: false, width: 400
+      ), sortable: false, width: 200
     },
     {
-      field: "hash", headerName: "Hash", sortable: false, width: 400
+      field: "hash", headerName: "Hash", sortable: false, width: 300
     },
-    { field: "Miner", headerName: "Miner", sortable: false, width: 100 },
+    { field: "miner", headerName: "Miner", sortable: false, width: 300 },
   ];
 
   if (transactions?.length > 0) {
     for (let i = 0; i < transactions.length; i++) {
       transactions[i].id = i;
-      if (transactions[i].fromAddress===""){
+      if (transactions[i].fromAddress==="" || transactions[i].fromAddress ===null){
         transactions[i].fromAddress = "SYSTEM";
       }
     }
@@ -91,6 +91,12 @@ export default function Transaction() {
   if (state.blockchain.chain.length > 0){
     for (let i = 0; i < state.blockchain.chain.length; i++) {
       newBlockChain[i].id = i;
+      newBlockChain[i].miner = "SYSTEM";
+      for (let j = 0; j < newBlockChain[i].transaction.length; j++){
+        if (newBlockChain[i].transaction[j].fromAddress === "SYSTEM"){
+          newBlockChain[i].miner = newBlockChain[i].transaction[j].toAddress;
+        }
+      }
     }
   }
   const classes = useStyles();
@@ -106,7 +112,7 @@ export default function Transaction() {
         <div className={classes.grid}>
           {transactions.length > 0 ? (
             <>
-              <div style={{ height: "400px", width: "1000px" }}>
+              <div style={{ height: "300px", width: "1200px" }}>
                 <DataGrid rows={transactions} columns={columns} pageSize={5} />
               </div>
             </>
@@ -125,7 +131,7 @@ export default function Transaction() {
         <div className={classes.grid}>
           {state.blockchain.chain.length > 0 ? (
             <>
-              <div style={{ height: "400px", width: "1000px" }}>
+              <div style={{ height: "300px", width: "1200px" }}>
                 <DataGrid rows={state.blockchain.chain} columns={columnsBlockChain} pageSize={5} />
               </div>
             </>

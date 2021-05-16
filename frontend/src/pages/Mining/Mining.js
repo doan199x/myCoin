@@ -6,6 +6,7 @@ import { EMIT_TYPE } from "../../constant/API";
 import { UserContext } from "../../context/UserProvider";
 import { isValidNewBlock, minePendingTransactions } from "../../function";
 import { TYPE } from "../../reducer/userReducer";
+import homeurl from '../../img/home.jpg'
 
 export default function Mining() {
   const [state, dispatch] = useContext(UserContext);
@@ -32,7 +33,7 @@ export default function Mining() {
 
     return () => {
       if (state.isMining) {
-        toast.error("Mining cancel");
+        toast.error("Mining canceled!");
         dispatch({ type: TYPE.STOP_MINER });
         socket.emit(EMIT_TYPE.STOP_MINING);
       }
