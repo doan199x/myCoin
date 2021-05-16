@@ -33,34 +33,40 @@ export default function Transaction() {
   const [state] = useContext(UserContext);
   const history = useHistory();
   if (state.privateKey) {
-
-  }
-  else {
+  } else {
     history.push("/");
     //return <></>;
   }
 
   const transactions = [];
 
-  state.blockchain.chain.map(block => {
-    block.transaction.map(trans => transactions.push(trans));
-  })
+  state.blockchain.chain.map((block) => {
+    block.transaction.map((trans) => transactions.push(trans));
+  });
 
   const columns = [
     { field: "id", headerName: "Latest", width: 120 },
     {
-      field: "fromAddress", headerName: "From Address", renderCell: (params) => (
-        <Tooltip title={params.formattedValue} >
+      field: "fromAddress",
+      headerName: "From Address",
+      renderCell: (params) => (
+        <Tooltip title={params.formattedValue}>
           <span className="table-cell-trucate">{params.formattedValue}</span>
         </Tooltip>
-      ), sortable: false, width: 400
+      ),
+      sortable: false,
+      width: 400,
     },
     {
-      field: "toAddress", headerName: "To Address", renderCell: (params) => (
-        <Tooltip title={params.formattedValue} >
+      field: "toAddress",
+      headerName: "To Address",
+      renderCell: (params) => (
+        <Tooltip title={params.formattedValue}>
           <span className="table-cell-trucate">{params.formattedValue}</span>
         </Tooltip>
-      ), sortable: false, width: 400
+      ),
+      sortable: false,
+      width: 400,
     },
     { field: "amount", headerName: "Amount", sortable: false, width: 150 },
   ];
@@ -69,12 +75,17 @@ export default function Transaction() {
     { field: "id", headerName: "Lasted", width: 100 },
     { field: "index", headerName: "index", width: 100 },
     {
-      field: "transaction", headerName: "Transactions", renderCell: (params) => (
-        <div>{params.formattedValue.length}</div>
-      ), sortable: false, width: 200
+      field: "transaction",
+      headerName: "Transactions",
+      renderCell: (params) => <div>{params.formattedValue.length}</div>,
+      sortable: false,
+      width: 200,
     },
     {
-      field: "hash", headerName: "Hash", sortable: false, width: 300
+      field: "hash",
+      headerName: "Hash",
+      sortable: false,
+      width: 300,
     },
     { field: "miner", headerName: "Miner", sortable: false, width: 300 },
   ];
@@ -82,18 +93,21 @@ export default function Transaction() {
   if (transactions?.length > 0) {
     for (let i = 0; i < transactions.length; i++) {
       transactions[i].id = i;
-      if (transactions[i].fromAddress==="" || transactions[i].fromAddress ===null){
+      if (
+        transactions[i].fromAddress === "" ||
+        transactions[i].fromAddress === null
+      ) {
         transactions[i].fromAddress = "SYSTEM";
       }
     }
   }
   const newBlockChain = [...state.blockchain.chain];
-  if (state.blockchain.chain.length > 0){
+  if (state.blockchain.chain.length > 0) {
     for (let i = 0; i < state.blockchain.chain.length; i++) {
       newBlockChain[i].id = i;
       newBlockChain[i].miner = "SYSTEM";
-      for (let j = 0; j < newBlockChain[i].transaction.length; j++){
-        if (newBlockChain[i].transaction[j].fromAddress === "SYSTEM"){
+      for (let j = 0; j < newBlockChain[i].transaction.length; j++) {
+        if (newBlockChain[i].transaction[j].fromAddress === "SYSTEM") {
           newBlockChain[i].miner = newBlockChain[i].transaction[j].toAddress;
         }
       }
@@ -106,7 +120,7 @@ export default function Transaction() {
         <div className={classes.line}>
           <h2 style={{ textAlign: "center", color: "#00033e" }}>
             {" "}
-            Transaction history
+            All transaction history
           </h2>
         </div>
         <div className={classes.grid}>
@@ -132,12 +146,15 @@ export default function Transaction() {
           {state.blockchain.chain.length > 0 ? (
             <>
               <div style={{ height: "300px", width: "1200px" }}>
-                <DataGrid rows={state.blockchain.chain} columns={columnsBlockChain} pageSize={5} />
+                <DataGrid
+                  rows={state.blockchain.chain}
+                  columns={columnsBlockChain}
+                  pageSize={5}
+                />
               </div>
             </>
           ) : (
-            <>
-            </>
+            <></>
           )}
         </div>
       </div>

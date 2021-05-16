@@ -9,21 +9,6 @@ const router = express.Router();
 router.post("/signup", (req, res) => {
   const newWallet = new MyWallet();
   res.send(newWallet);
-  // try {
-  //   walletModel.create(
-  //     {
-  //       publicKey: newWallet.publicKey,
-  //       privateKey: newWallet.privateKey,
-  //       password: req.body.password,
-  //     },
-  //     (err, docs) => {
-  //       if (docs) res.send(newWallet);
-  //       else if (err) console.log("Error: ", err);
-  //     }
-  //   );
-  // } catch (error) {
-  //   console.log("Error: ", error);
-  // }
 });
 
 router.post("/password", (req, res) => {
@@ -45,9 +30,6 @@ router.post("/signin", (req, res) => {
     const key = req.body.key.publicKey;
     const password = req.body.password;
     //Identify
-    // walletModel.find({ publicKey: key,password:password}, (err, docs: any) => {
-    //   if (docs) {
-    //    if (docs?.length > 0) {
         let balance = 0;
         const publicKey = key;
         const value = MyWallet.wallet.map((ele) => {
